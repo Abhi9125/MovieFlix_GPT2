@@ -1,6 +1,10 @@
 import React, { useRef, useState } from "react";
 import Header from "./Header";
-
+import { auth } from "../utils/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 const Login = () => {
   const [isSignInPage, setIsSignInPage] = useState(true);
   const [validationMessage, setValidationMessage] = useState("");
@@ -24,11 +28,44 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const message = validateForm(email.current.value, password.current.value);
-    setValidationMessage(message);
 
-    if (message === "") {
-      setValidationMessage("Form submitted successfully");
-      // Proceed with form submission logic
+    if (message != "") setValidationMessage(message);
+
+    if (!isSignInPage) {
+      // sign up
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log(user);
+          setValidationMessage("Account created successfully!");
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setValidationMessage(errorCode + "-" + errorMessage);
+        });
+    } else {
+      // Sign In
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          setValidationMessage("Signed in successfully!");
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setValidationMessage(errorCode + "-" + errorMessage);
+        });
     }
   };
 
